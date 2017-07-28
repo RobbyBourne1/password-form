@@ -1,30 +1,34 @@
 const express = require('express')
-const mst = require('mustache')
 const mustacheExpress = require('mustache-express')
+const bodyParser = require('body-parser')
 
 const app = express()
 
-app.engine('mst', mustacheExpress)
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+
+app.engine('mst', mustacheExpress())
 app.set('views', './templates')
 app.set('view engine', 'mst')
 
-const authenticate = (request, respond, next) => {
-  if (request.query.userName === 'Robby' && request.query.password === 'Rocks') {
+const authenticate = (request, response, next) => {
+  if (request.body.userName === 'Robby' && request.body.password === 'Rocks') {
     next()
   } else {
-    respond.send('Wrong Answer')
+    response.redirect('/login')
   }
 }
 
-app.get('/', (request, respond) => {
-  respond.render('home')
-})
-
-app.post('/', (request, respond) => {
-  console.log('Hello!')
+app.get('/login', (request, response) => {
+  // response.send('whatevs')
+  response.render('login')
 })
 
 app.use(authenticate)
+
+app.post('/', (request, response) => {
+  response.render('index', request.body)
+})
 
 app.listen(3000, () => {
   console.log('Something Just Moved')
